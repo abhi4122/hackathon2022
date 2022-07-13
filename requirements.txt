@@ -1,0 +1,7 @@
+#
+# Copyright (c) 2022 by Delphix. All rights reserved.
+#
+
+--index-url https://artifactory.delphix.com/artifactory/api/pypi/delphix-virtual-pypi/simple
+
+-e ./
