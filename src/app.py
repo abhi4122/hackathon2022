@@ -13,8 +13,8 @@ app = App(token=BOT_TOKEN)
 
 @app.event("app_mention")
 def handle_app_mention_events(body: dict, say: Callable):
-    print(body)
-    say("got it")
+    # print(body)
+    say("Done")
     bot_id = body.get("event", {}).get("text").split()[0]
     message = body.get("event", {}).get("text").replace(bot_id, "").strip()
     print(message)
@@ -24,7 +24,7 @@ def handle_app_mention_events(body: dict, say: Callable):
     page_id = get_page_id(subpage_name)
     if page_id is None:
         page_id = create_page(subpage_name)
-    # update_page(page_id, message)
+    update_page(page_id, message, 'Recognitions')
 
 
 if __name__ == "__main__":
