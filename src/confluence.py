@@ -31,10 +31,24 @@ def create_page(page_name):
         "Content-Type": "application/json",
         "Authorization": token
     }
-    payload = json.dumps({"type": "page", "title": page_name,
-                          "space": {"key": "HACKATHON"}, "ancestors": [{"id": parent_page_id}],
-                          "body": {"storage": {"value": "<p></p>", "representation":
-                              "storage"}}})
+
+    value = "<h2>Recognitions</h2><h2>Work " \
+            "Anniversaries</h2><h2>Release Updates</h2><h2>Project " \
+            "Updates</h2><h2>Initiatives</h2><h2>Ted Talks - Python</h2><h2>Fun Activities and " \
+            "Events</h2><h2>Miscellaneous</h2><h2>New Joiners</h2> "
+
+    payload = json.dumps({
+        "space": {"key": "HACKATHON"},
+        "ancestors": [{"id": parent_page_id}],
+        "title": page_name,
+        "type": "page",
+        "body": {
+            "storage": {
+                "value": value,
+                "representation": "storage"
+            },
+        }
+    })
 
     response = requests.request(
         "POST",
@@ -45,6 +59,57 @@ def create_page(page_name):
     print(f"create page status code: {response.status_code}")
     data = json.loads(response.text)
     return data["id"]
+
+
+def get_page_version(page_id):
+    updated_url = f"{url}/{page_id}"
+
+    headers = {
+        "Accept": "application/json",
+        "Authorization": token
+    }
+    response = requests.request(
+        "GET",
+        updated_url,
+        headers=headers
+    )
+    print(f"get page version status code: {response.status_code}")
+    data = json.loads(response.text)
+    return data["version"]["number"], data["title"]
+
+
+def update_page(page_id, message):
+    curr_version, title = get_page_version(page_id)
+    update_url = f"{url}/{page_id}"
+
+    headers = {
+       "Accept": "application/json",
+       "Content-Type": "application/json",
+       "Authorization": token
+    }
+
+    payload = json.dumps({
+      "version": {
+        "number": curr_version + 1
+      },
+      "title": title,
+      "type": "page",
+      "body": {
+        "storage": {
+          "value": message,
+          "representation": "storage"
+        },
+      }
+    })
+
+    response = requests.request(
+       "PUT",
+       update_url,
+       data=payload,
+       headers=headers
+    )
+
+    print(f"update page version status code: {response.status_code}")
 
 # page_id = get_page_id("August2022")
 # print(page_id)

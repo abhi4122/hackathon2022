@@ -12,17 +12,19 @@ app = App(token=BOT_TOKEN)
 
 
 @app.event("app_mention")
-def mention_handler(body: dict, say: Callable):
+def handle_app_mention_events(body: dict, say: Callable):
     print(body)
     say("got it")
-    msg = body["event"]["text"]
-    print(msg)
+    bot_id = body.get("event", {}).get("text").split()[0]
+    message = body.get("event", {}).get("text").replace(bot_id, "").strip()
+    print(message)
     event_time = body["event_time"]
-    ts = datetime.fromtimestamp(event_time).strftime('%B-%Y')
-    print(ts)
-    page_id = get_page_id(ts)
+    subpage_name = datetime.fromtimestamp(event_time).strftime('%B-%Y')
+    print(subpage_name)
+    page_id = get_page_id(subpage_name)
     if page_id is None:
-        new_page_id = create_page(ts)
+        page_id = create_page(subpage_name)
+    # update_page(page_id, message)
 
 
 if __name__ == "__main__":
