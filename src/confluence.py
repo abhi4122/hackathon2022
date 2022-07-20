@@ -128,10 +128,10 @@ def _create_body(to_append, category, page_id=None):
 
     for value in soup.find_all():
         if value.text.strip() == category:
-            if 'ul' in str(value.next_sibling):
+            if 'li' in str(value.next_sibling):
                 value.next_sibling.append(child)
             else:
-                value.append(child)
+                value.insert(child)
             break
 
     return str(soup)
