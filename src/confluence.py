@@ -47,10 +47,15 @@ def create_page(page_name):
         "Authorization": token
     }
 
-    value = "<h2>Recognitions</h2><h2>Work " \
+    value = "<ac:structured-macro ac:name=\"toc\" ac:schema-version=\"1\" " \
+            "data-layout=\"default\" ac:local-id=\"b1cf6296-7959-4f79-ad83-b086f3dfb404\"" \
+            " ac:macro-id=\"093b86ce84ac817cef793680a7663e31\"><ac:parameter ac:name=\"" \
+            "minLevel\">2</ac:parameter><ac:parameter ac:name=\"maxLevel\">2</" \
+            "ac:parameter><ac:parameter ac:name=\"absoluteUrl\">true</ac:parameter>" \
+            "</ac:structured-macro><h2>Recognitions</h2><h2>Work " \
             "Anniversaries</h2><h2>Release Updates</h2><h2>Project " \
             "Updates</h2><h2>Initiatives</h2><h2>Ted Talks - Python</h2><h2>Fun Activities and " \
-            "Events</h2><h2>Miscellaneous</h2><h2>New Joiners</h2> "
+            "Events</h2><h2>New Joiners</h2><h2>Miscellaneous</h2>"
 
     payload = json.dumps({
         "space": {"key": "HACKATHON"},
@@ -123,15 +128,17 @@ def _create_body(to_append, category, page_id=None):
     html_text = str(json.loads(response.text)['body']['storage']['value'])
     soup = BeautifulSoup(html_text, 'html.parser')
 
-    final_append = "<li><p>" + to_append + "</p></li>"
-    child = BeautifulSoup(final_append, 'html.parser')
-
     for value in soup.find_all():
         if value.text.strip() == category:
-            if 'li' in str(value.next_sibling):
+            if 'ul' in str(value.next_sibling):
+                final_append = "<li><p>" + to_append + "</p></li>"
+                child = BeautifulSoup(final_append, 'html.parser')
                 value.next_sibling.append(child)
             else:
-                value.insert(child)
+                final_append = "<ul><li><p>" + to_append + "</p></li></ul>"
+                child = BeautifulSoup(final_append, 'html.parser')
+                insert_index = soup.index(value) + 1
+                soup.insert(insert_index, child)
             break
 
     return str(soup)
