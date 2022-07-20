@@ -3,11 +3,17 @@ from typing import Callable
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 from datetime import datetime
+import re
 from confluence import *
 from slack_sdk import WebClient
 
-APP_TOKEN = "xapp-1-A03NNN2H4E5-3751520877734-f768a856842e41c888bee8001d97493ebaabf6999f3c82bc8e88761cb73012db"
-BOT_TOKEN = "xoxb-3751443857062-3781888064192-fFS8sRPyJOOQNGMR0uZR06W4"
+# professor
+# APP_TOKEN = "xapp-1-A03NNN2H4E5-3751520877734-f768a856842e41c888bee8001d97493ebaabf6999f3c82bc8e88761cb73012db"
+# BOT_TOKEN = "xoxb-3751443857062-3781888064192-fFS8sRPyJOOQNGMR0uZR06W4"
+
+# newsletter
+APP_TOKEN = "xapp-1-A03QL9C2ND7-3847444114080-10c725525b4d9ec777f66a83212ed79d650d68e86cba042c1b6422cb0ce8e77a"
+BOT_TOKEN = "xoxb-3751443857062-3823639890851-6ktxT1xjKDKEzCFjvqTTCjU3"
 app = App(token=BOT_TOKEN)
 
 message = ""
@@ -17,20 +23,21 @@ user = ""
 
 
 @app.event("app_mention")
-def handle_app_mention_events(body: dict, say: Callable):
-    # print(body)
+def handle_app_mention_events(body: dict):
+    print("app_mention called")
+    print(body)
     global message, subpage_name, channel, user
     blocks = _create_block_for_categories()
-    # say(
-    #     blocks=blocks,
-    #     text="Pick a category to save this message"
-    # )
     bot_id = body.get("event", {}).get("text").split()[0]
     message = body.get("event", {}).get("text").replace(bot_id, "").strip()
     channel = body.get("event", {}).get("channel")
     user = body.get("event", {}).get("user")
-
+    event_time = body["event_time"]
+    subpage_name = datetime.fromtimestamp(event_time).strftime('%B-%Y')
+    msg_time = datetime.fromtimestamp(event_time).strftime('%d %B %H:%M:%S')
     client = WebClient(token=BOT_TOKEN)
+    channel_details = client.conversations_info(channel=channel)
+    message = _format_message(client, message, msg_time, channel_details.get('channel').get('name'))
     client.chat_postEphemeral(
         channel=channel,
         blocks=blocks,
@@ -38,19 +45,17 @@ def handle_app_mention_events(body: dict, say: Callable):
         user=user,
     )
 
-    event_time = body["event_time"]
-    subpage_name = datetime.fromtimestamp(event_time).strftime('%B-%Y')
-
 
 @app.action("static_select-action")
 def handle_some_action(ack, body, logger):
+    print("static_select-action called")
     ack()
     logger.info(body)
     try:
         category = body["actions"][0]["selected_option"]["text"]["text"]
-        # print(category)
-        # print(message)
-        # print(subpage_name)
+        print(category)
+        print(message)
+        print(subpage_name)
         page_id = get_page_id(subpage_name)
         if page_id is None:
             page_id = create_page(subpage_name)
@@ -64,6 +69,19 @@ def handle_some_action(ack, body, logger):
             text=f"Your message has been successfully appended to {subpage_name} newsletter under {category}",
             user=user,
         )
+
+
+def _format_message(client, msg, msg_time, channel_name):
+    all_words = msg.split()
+    new_msg = ""
+    for word in all_words:
+        if re.search("<@.*>", word):
+            user_id = word.replace("<@", "").replace(">", "")
+            user_detail = client.users_info(user=user_id)
+            new_msg = new_msg + " " + "<b>" + user_detail.get('user').get('real_name') + "</b>"
+        else:
+            new_msg = new_msg + " " + word
+    return new_msg.strip() + f" <em><p style='color:#97a0af'>(Posted on {msg_time} at #{channel_name})</p></em>"
 
 
 def _create_block_for_categories():
