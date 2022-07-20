@@ -81,7 +81,7 @@ def _format_message(client, msg, msg_time, channel_name):
             new_msg = new_msg + " " + "<b>" + user_detail.get('user').get('real_name') + "</b>"
         else:
             new_msg = new_msg + " " + word
-    return new_msg.strip() + f" <em><p style='color:#97a0af'>(Posted on {msg_time} at #{channel_name})</p></em>"
+    return new_msg.strip() + f" <em><span style=\"color:#97a0af\">(Posted on {msg_time} at #{channel_name})</span></em>"
 
 
 def _create_block_for_categories():
