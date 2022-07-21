@@ -28,7 +28,7 @@ def handle_app_mention_events(body: dict):
     print(body)
     global message, subpage_name, channel, user
     blocks = _create_block_for_categories()
-    bot_id = body.get("event", {}).get("text").split()[0]
+    bot_id = "<@" + body.get("authorizations")[0].get("user_id") + ">"
     message = body.get("event", {}).get("text").replace(bot_id, "").strip()
     channel = body.get("event", {}).get("channel")
     user = body.get("event", {}).get("user")
