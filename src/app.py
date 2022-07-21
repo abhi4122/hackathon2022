@@ -1,4 +1,6 @@
-from typing import Callable
+#
+# Copyright (c) 2022 by Delphix-Hackathon. All rights reserved.
+#
 
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
@@ -6,14 +8,15 @@ from datetime import datetime
 import re
 from confluence import *
 from slack_sdk import WebClient
+import logging
 
 # professor
-APP_TOKEN = "xapp-1-A03NNN2H4E5-3831783264532-2630d3d2503861c0474d18729c09df8ec4cf28ae20025d36d2899e4d8e56e1eb"
-BOT_TOKEN = "xoxb-3751443857062-3781888064192-bL05ZXVbCNB9RUHLtGmPjvvA"
+APP_TOKEN = "xapp-1-A03NNN2H4E5-3822792478838-090eff25f5d04b35a3db6e74df8c34166d8a1f88ddf2651d98916465c652e390"
+BOT_TOKEN = "xoxb-3751443857062-3781888064192-XcAW93ubMAyGApt82FIU0Rvd"
 
 # newsletter
-#APP_TOKEN = "xapp-1-A03QL9C2ND7-3822744932038-f7ee5f17a7eeeb16be851937bc4746762307512d857cdfad123b0ec220e161cc"
-#BOT_TOKEN = "xoxb-3751443857062-3823639890851-4vjHicpxdKeKFjgQ7KYXCohe"
+# APP_TOKEN = "xapp-1-A03QL9C2ND7-3822744932038-f7ee5f17a7eeeb16be851937bc4746762307512d857cdfad123b0ec220e161cc"
+# BOT_TOKEN = "xoxb-3751443857062-3823639890851-4vjHicpxdKeKFjgQ7KYXCohe"
 app = App(token=BOT_TOKEN)
 
 message = ""
@@ -23,9 +26,16 @@ user = ""
 
 
 @app.event("app_mention")
+@app.event("message")
 def handle_app_mention_events(body: dict):
-    print("app_mention called")
-    print(body)
+    """
+    Method to capture app_mention and instant message
+    events triggered from slack bot, capture message body
+    and trigger Ephemeral block kit to confirm category
+
+    :param body : Body of the message posted on slack
+    :type body: ```dict```
+    """
     global message, subpage_name, channel, user
     blocks = _create_block_for_categories()
     bot_id = "<@" + body.get("authorizations")[0].get("user_id") + ">"
@@ -47,15 +57,25 @@ def handle_app_mention_events(body: dict):
 
 
 @app.action("static_select-action")
-def handle_some_action(ack, body, logger):
-    print("static_select-action called")
+def handle_some_action(ack, body):
+    """
+    Method to handle select action for Block kit,
+    capture category and create/update confluence page
+    based on received data
+
+    :param ack : receive acknowledgement from slack
+    :type  ack : ```ack```
+    :param body : Body of the select kit builder response
+        posted on slack
+    :type body: ```dict```
+    """
     ack()
-    logger.info(body)
+    logging.info(body)
     try:
         category = body["actions"][0]["selected_option"]["text"]["text"]
-        print(category)
-        print(message)
-        print(subpage_name)
+        logging.info(f"Message will be posted to following category: {category}")
+        logging.info(f"Message to be posted: {message}")
+        logging.info(f"Name of the page the message will be appended to: {subpage_name}")
         page_id = get_page_id(subpage_name)
         if page_id is None:
             page_id = create_page(subpage_name)
@@ -72,6 +92,19 @@ def handle_some_action(ack, body, logger):
 
 
 def _format_message(client, msg, msg_time, channel_name):
+    """
+    Method to format message captured by slack bot
+
+    :param client : WebClient Object
+    :type  client : ```object```
+    :param msg : message to be formatted
+    :type msg: ```str```
+    :param msg_time : msg post time retrieved from slack
+    :type  msg_time : ```str```
+    :param channel_name : name of the channel where msg was
+        posted retrieved from slack
+    :type  channel_name : ```str```
+    """
     all_words = msg.split()
     new_msg = ""
     for word in all_words:
@@ -85,6 +118,9 @@ def _format_message(client, msg, msg_time, channel_name):
 
 
 def _create_block_for_categories():
+    """
+    Method to create content for BLock Kit
+    """
     return [
         {
             "type": "section",

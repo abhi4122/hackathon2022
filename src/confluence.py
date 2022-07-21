@@ -1,6 +1,11 @@
+#
+# Copyright (c) 2022 by Delphix-Hackathon. All rights reserved.
+#
+
 import requests
 import json
 from bs4 import BeautifulSoup
+import logging
 
 url = "https://delphix-hackathon.atlassian.net/wiki/rest/api/content"
 token = "Basic YWJoaWFnYXJ3YWw0MUBnbWFpbC5jb206ZHJUcXZwVEF6ZUxqM2cxV1h3aG4yQkU3"
@@ -25,7 +30,7 @@ def get_page_id(page_name):
         url,
         headers=headers
     )
-    print(f"get page status code: {response.status_code}")
+    logging.info(f"Status code for the GET request to fetch page id: {response.status_code}")
     data = json.loads(response.text)
     for result in data["results"]:
         if result["title"] == page_name:
@@ -76,7 +81,7 @@ def create_page(page_name):
         data=payload,
         headers=headers
     )
-    print(f"create page status code: {response.status_code}")
+    logging.info(f"Create API Status code: {response.status_code}")
     data = json.loads(response.text)
     return data["id"]
 
@@ -99,7 +104,7 @@ def get_page_version(page_id):
         updated_url,
         headers=headers
     )
-    print(f"get page version status code: {response.status_code}")
+    logging.info(f"get page version status code: {response.status_code}")
     data = json.loads(response.text)
     return data["version"]["number"], data["title"]
 
@@ -192,4 +197,5 @@ def update_page(page_id, message_to_append, category):
        headers=headers
     )
 
-    print(f"update page version status code: {response.status_code}")
+    logging.info(f"updated page with current version number: {curr_version + 1}")
+    logging.info(f"update page version status code: {response.status_code}")
