@@ -10,13 +10,10 @@ from confluence import *
 from slack_sdk import WebClient
 import logging
 
-# professor
-APP_TOKEN = "xapp-1-A03NNN2H4E5-3822792478838-090eff25f5d04b35a3db6e74df8c34166d8a1f88ddf2651d98916465c652e390"
-BOT_TOKEN = "xoxb-3751443857062-3781888064192-XcAW93ubMAyGApt82FIU0Rvd"
+# delphix-digest-tokens
+APP_TOKEN = "xapp-1-A03QAMVE15K-3832122842004-c79b3fc080767dc892c42800080168916d3f384c94947fbb824c53a6863a5f8c"
+BOT_TOKEN = "xoxb-3751443857062-3853451302448-bGZ5ESdDqFIA13XZYJyuAbrL"
 
-# newsletter
-# APP_TOKEN = "xapp-1-A03QL9C2ND7-3822744932038-f7ee5f17a7eeeb16be851937bc4746762307512d857cdfad123b0ec220e161cc"
-# BOT_TOKEN = "xoxb-3751443857062-3823639890851-4vjHicpxdKeKFjgQ7KYXCohe"
 app = App(token=BOT_TOKEN)
 
 message = ""
@@ -48,6 +45,7 @@ def handle_app_mention_events(body: dict):
     client = WebClient(token=BOT_TOKEN)
     channel_details = client.conversations_info(channel=channel)
     message = _format_message(client, message, msg_time, channel_details.get('channel').get('name'))
+
     client.chat_postEphemeral(
         channel=channel,
         blocks=blocks,
@@ -112,6 +110,8 @@ def _format_message(client, msg, msg_time, channel_name):
             user_id = word.replace("<@", "").replace(">", "")
             user_detail = client.users_info(user=user_id)
             new_msg = new_msg + " " + "<b>" + user_detail.get('user').get('real_name') + "</b>"
+        elif ':' in word:
+            pass
         else:
             new_msg = new_msg + " " + word
     return new_msg.strip() + f" <em><span style=\"color:#97a0af\">(Posted on {msg_time} at #{channel_name})</span></em>"
@@ -126,7 +126,7 @@ def _create_block_for_categories():
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "Hello, *Professor* wants to know where you'd like to save this message.\n\n *Please "
+                "text": "Hello, *Delphix Digest* wants to know where you'd like to save this message.\n\n *Please "
                         "select a category:* "
             }
         },

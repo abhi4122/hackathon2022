@@ -45,7 +45,7 @@ def create_page(page_name):
     :param page_name : Title to create new page with
     :type page_name : ```str```
     """
-    parent_page_id = get_page_id("Newsletter")
+    parent_page_id = get_page_id("Delphix Digest")
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
